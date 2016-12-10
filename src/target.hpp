@@ -9,6 +9,7 @@ using namespace cv;
 class Target{
 public:
   Target(std::vector<Point> contour);
+  Target();
   double getHeight();
   double getWidth();
   void printPoints();

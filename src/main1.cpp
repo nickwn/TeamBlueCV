@@ -38,7 +38,7 @@ int main(int, char**){
 
   Mat frame;
 
-  VideoCapture cap2(0); // open the 2nd default camera
+  VideoCapture cap2(1); // open the 2nd default camera
   if(!cap2.isOpened()){  // check if we succeeded
     return -1;
   }

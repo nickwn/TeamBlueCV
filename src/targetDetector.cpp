@@ -42,7 +42,7 @@ Target targetDetector::processImage(Mat image, int num){}
         approxPolyDP(contours[i], output, cv::arcLength(cv::Mat(contours.at(i)), true) * 0.02
         , bool closed);
         if(output.size()== num && num == 4){ // if trying to detect higher 4 sided target
-          totalX += output.x;
+
           for(j; j<output.size(); j++){ // iterate through approxPolyDP output
             totalX += output[j].x; // add all X values of the output to later find average
             totalY += output[j].y; // add all Y values of the output to later find average
