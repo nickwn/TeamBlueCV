@@ -7,6 +7,10 @@ Target::Target(std::vector<cv::Point> contour)
 {
 }
 
+Target::Target(){
+  
+}
+
 Point getTopPoint(){
   int max = 0;
   int ref = 0;
