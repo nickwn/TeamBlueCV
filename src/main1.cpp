@@ -23,10 +23,10 @@ int distance_L; // distance_L is the distance between second camera and ending z
 int distance2; // distance2 is the distance of the second camera to the ending zone target
 
 int main(int, char**){
-  targetDetector tD(); // tD is target detector for the first camera
-  targetProcessor tP(); // tP is target processor for the first camera
-  targetDetector tD2(); // tD2 is target detector for the second camera
-  targetProcessor tP2(); // tP2 is target processor for the second camera
+  targetDetector tD; // tD is target detector for the first camera
+  targetProcessor tP; // tP is target processor for the first camera
+  targetDetector tD2; // tD2 is target detector for the second camera
+  targetProcessor tP2; // tP2 is target processor for the second camera
   Target target; // target is generic target for the first camera
   Target target2; // target2 is generic target for the second(back) camera
   Target target_original; // target_original is the target for the intial horizontal target(plus sign)
