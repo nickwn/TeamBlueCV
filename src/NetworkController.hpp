@@ -1,5 +1,5 @@
-#ifndef NetworkController_hpp
-#define NetworkController_hpp
+#ifndef NETWORK_CONTROLLER_HPP
+#define NETWORK_CONTROLLER_HPP
 
 #include <boost/asio.hpp>
 
@@ -14,11 +14,11 @@ class NetworkController
     private:
         int portNumber;
         bool isInitialized;
-        boost::asio::io_service *io_service;
-        boost::asio::ip::tcp::acceptor *acceptor;
-        boost::asio::ip::tcp::socket *socket;
+        boost::asio::io_service* io_service;
+        boost::asio::ip::tcp::acceptor* acceptor;
+        boost::asio::ip::tcp::socket* socket;
         boost::system::error_code ignored_error;
         boost::system::error_code error;
 };
 
-#endif /* NetworkController_hpp  */
+#endif /* NETWORK_CONTROLLER_HPP  */

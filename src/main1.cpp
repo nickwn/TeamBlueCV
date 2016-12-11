@@ -1,114 +1,179 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <memory>
 
-#include "targetProcessing.hpp"
-#include "targetDetector.hpp"
-#include "target.hpp"
+#include "GUIManager.hpp"
+#include "NetworkController.hpp"
+#include "CmdLineInterface.hpp"
+#include "TargetProcessor.hpp"
+#include "TargetDetector.hpp"
+#include "Target.hpp"
 
 #define EPSILON 5 // Minimum error value
 #define CAM_ANGLE 45 // angle of camera on robot
 
-using namespace cv;
+void test(TargetType targetType);
+void run();
+std::string buildStr();
 
-int azimuth = 1000; // azimuth is the original checking angle used for PID with first camera
-int azimuth_H; // azimuth_H is the horizontal angle to the higher target
-int azimuth_L; // azimuth_L is the horizontal angle to the lower parking zone
-int azimuth2; // azimuth2 is the azimuth of the second camera to the ending zone target
-int altitude_H; // alitude_H is the altitude of the higher target
-int altitude_L; // altitude_L is the altitude of the lower parking zone
-int distance_H; // distance_H is the distance between second camera and ending zone parking target
-                        //when the azimuth_H is 0
-int distance_L; // distance_L is the distance between second camera and ending zone parking target
-                        //when the azimuth_L is 0
-int distance2; // distance2 is the distance of the second camera to the ending zone target
+// Alignment Cross values
+double alignCrossDist; // distance in inches towards the alignment cross
+double alignCrossAz; //azimuth for the alognment cross;
 
-int main(int, char**){
-  targetDetector tD; // tD is target detector for the first camera
-  targetProcessor tP; // tP is target processor for the first camera
-  targetDetector tD2; // tD2 is target detector for the second camera
-  targetProcessor tP2; // tP2 is target processor for the second camera
-  Target target; // target is generic target for the first camera
-  Target target2; // target2 is generic target for the second(back) camera
-  Target target_original; // target_original is the target for the intial horizontal target(plus sign)
-                          // when checking with first camera
-  VideoCapture cap(0); // open the default camera
-  if(!cap.isOpened()){  // check if we succeeded
+// High goal values
+double highGoalDist; // distance in inches towards high goal
+double highGoalAz; // azimuth towards high goal
+double highGoalAlt; // altitude towards high gloal
+
+// Parking Cross values
+double parkCrossDist; // distance towards parking cross in inches
+double parkCrossAz; // azimuth towards parking cross in degrees
+
+// Cameras and stuff
+TargetDetector targetDetector; // general-purpose TargetDetector
+//TargetProcessor crossProcessor(20.32, 480, 320, 240);
+//TargetProcessor goalProcessor(50, 480, 320, 240);
+TargetProcessor targetProcessor(480, 320, 240);
+VideoCapture backCam; // The back cam. It's main purpose is to find the distance and azimuth for the alignment cross and parking cross. Angled straight ahead
+VideoCapture sideCam; // The side cam. It's main purpose is to find the distance and azimuth of the high goal and parking cross.
+
+GUIManager gui;
+
+int main(int argc, char* argv[])
+{
+  CmdLineInterface cli(argc, argv);
+
+  backCam = VideoCapture(0); //
+  if(!backCam.isOpened())
+  {  // check if we succeeded
+    std::cerr << "failed to open back cam" << std::endl;
     return -1;
   }
 
-  Mat frame;
-
-  VideoCapture cap2(1); // open the 2nd default camera
-  if(!cap2.isOpened()){  // check if we succeeded
-    return -1;
+  if(cli.getIsTest())
+  {
+    test(cli.getTargetType());
   }
-
-  Mat frame2;
-
-  namedWindow("edges",1);
-    while(azimuth > EPSILON){ // while the horizontal azimuth of first camera is greater than error constant
-      cap >> frame; // get frame from first camera
-      cap2 >> frame2; // get frame from second camera
-
-      target_original = Target(tD.processImage(frame, 12)); // make the image of horizontal detection a target
-      tP.loadTarget(target_original);
-      azimuth = tp.Azimuth(); //TODO send to sc
+  else
+  {
+    sideCam = VideoCapture(1);
+    if(!sideCam.isOpened())
+    {  // check if we succeeded
+      std::cerr << "failed to open side cam" << std::endl;
+      return -1;
     }
-
-    bool scTrigger = true; // when to switch to second camera after 90 degree rotation
-    while(scTrigger){ // while SC wants to use PID
-
-      cap >> frame;
-      cap2 >> frame2;
-
-      target2 = Target(tD2.processImage(frame2, 12)); // make image of second camera (facing horizontally) into a target
-      tP2.loadTarget(target2);
-      azimuth2 = tp2.Azimuth(); //TODO send to sc in loop
-      distance2 = tp2.Distance(); //TODO send to sc in loop
-      // TODO Update SC Trigger from Network Tables (Once PID has
-      // navigated close to the target, we will exit this loop.
-    }
-
-    while(true){
-
-      cap >> frame;
-      cap2 >> frame2;
-
-      target = Target(tD.processImage(frame, 4)); // look for contours with 4 points to make a rectangular target (higher target)
-      tP.loadTarget(target);
-      azimuth_H = tp.Azimuth(); // the horizontal azimuth to higher target
-      altitude_H = tp.Altitude() + CAM_ANGLE; // vertical altitude angle to higher target
-
-      // TODO Check if altitude is greater than some constant to filter out medium goal
-      // if(alitude_H > CONSTANT){ TODO find the CONSTANT by checking the camera
-      //  //send aziimuth, distance and alitude to SC
-      // }
-
-      //distance = tp.Distance(); //send to sc
-
-
-      if(azimuth_H < EPSILON){ // if the azimuth of higher target is less than error
-        distance_H = tp2.Distance(); // If you identify the target
-                                     // TODO send horizontal displacement to SC
-        // TODO send azimuth_H and alitude_H to SC
-      }
-
-      target = Target(tD.processImage(frame, 12)); // look for contours with 4 points to make a plus target (parking zone)
-      tP.loadTarget(target);
-      azimuth_L = tp.Azimuth(); // the horizontal azimuth to lower parking zone
-      altitude_L = CAM_ANGLE - tp.Altitude(); // the vertical altitude angle to lower parking zone
-
-      //distance = tp.Distance(); //send to sc
-
-      if(azimuth_L < EPSILON){ // if the azimuth of lower parking zone is less than error
-        distance_L = tp2.Distance(); // If you identify the target
-                                     // TODO send horizontal displacement to SC
-        // TODO send azimuth_L and alitude_L to SC
-      }
-    }
-
+    run();
+  }
 
   // the camera will be deinitialized automatically in VideoCapture destructor
   return 0;
 
+}
+
+void test(TargetType targetType)
+{
+  cv::Mat backImg;
+  std::unique_ptr<Target> target;
+  int points = (targetType==TargetType::Cross) ? 12 : 8;
+  int tgtWidth = (targetType==TargetType::Cross) ? 20.32 : 50;
+  double distance = 0, azimuth = 0, altitude = 0;
+
+  while(waitKey(10) < 0)
+  {
+    backCam >> backImg;
+    target = targetDetector.processImage(backImg, points);
+    if(target != nullptr)
+    {
+      targetProcessor.loadTarget(target, tgtWidth);
+      distance = targetProcessor.calcDistance();
+      azimuth = targetProcessor.calcAzimuth();
+      altitude = targetProcessor.calcAltitude();
+
+      drawContours(backImg, &contour, 0, Scalar(255, 0, 0), 4);
+      gui.show("img", backImg);
+      std::cout << "Target found!" << std::endl
+                << "\tDistance: " << distance << std::endl
+                << "\tAzimuth: " << azimuth << std::endl
+                << "\tAltitude: " << azimuth << std::endl;
+    }
+    else
+    {
+      std::cout << "No target found" << std::endl;
+    }
+  }
+}
+
+void run()
+{
+  /* ---------- Initial Alignment with alignment cross ---------- */
+  cv::Mat backImg;
+  cv::Mat sideImg;
+  std::unique_ptr<Target> alignCross;
+  std::unique_ptr<Target> highGoal;
+  std::unique_ptr<Target> parkCross;
+  while(alignCrossAz > EPSILON)
+  { // while the horizontal azimuth of first camera is greater than error constant
+    sideCam >> sideImg;
+    alignCross = targetDetector.processImage(sideImg, 12); // make the image of horizontal detection a target
+    if(alignCross != nullptr)
+    {
+      targetProcessor.loadTarget(alignCross, 20.32);
+      alignCrossAz = targetProcessor.calcAzimuth(); //TODO send to sc
+    }
+  }
+
+  /* ---------- Look for both crosses and goal after turning 90 degrees ---------- */
+  bool foundParkLoc;
+  while (highGoalAz > EPSILON) // loop until we are aligned with the high goal
+  {
+    // look for alignment cross
+    backCam >> backImg;
+    alignCross = targetDetector.processImage(backImg, 12);
+    if(alignCross != nullptr)
+    {
+      targetProcessor.loadTarget(alignCross. 20.32);
+      alignCrossDist = targetProcessor.calcDistance();
+      alignCrossAz = targetProcessor.calcAzimuth();
+    }
+
+    // look for high goal
+    sideCam >> sideImg;
+    highGoal = targetDetector.processImage(sideImg, 8);
+    if(highGoal != nullptr)
+    {
+      targetProcessor.loadTarget(highGoal, 50);
+      highGoalDist = targetProcessor.calcDistance();
+      highGoalAz = targetProcessor.calcAzimuth();
+      highGoalAlt = targetProcessor.calcAltitude();
+    }
+
+    // look for the parking cross if we haven't already found it to save time
+    if(!foundParkLoc)
+    {
+      sideCam >> sideImg; // update the image again because it took a while to find the high goal
+      parkCross = targetDetector.processImage(sideImg, 8);
+      if(parkCross != nullptr)
+      {
+        targetProcessor.loadTarget(parkCross, 20.32);
+        parkCrossDist = targetProcessor.calcDistance();
+        parkCrossAz = targetProcessor.calcAzimuth();
+      }
+
+      if(parkCrossAz < EPSILON)
+        foundParkLoc = true;
+    }
+  }
+
+  /* ---------- Look for parking cross to align robot with it and drive into it ---------- */
+  while (parkCrossDist > 20)
+  {
+    backCam >> backImg;
+    parkCross = targetDetector.processImage(backImg, 12);
+    if(parkCross != nullptr)
+    {
+      targetProcessor.loadTarget(parkCross, 50);
+      parkCrossDist = targetProcessor.calcDistance();
+      parkCrossAz = targetProcessor.calcAzimuth();
+    }
+  }
 }

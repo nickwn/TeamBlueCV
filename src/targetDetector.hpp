@@ -1,15 +1,13 @@
-#ifndef TARGET_DETECTOR_H
-#define TARGET_DETECTOR_H
+#ifndef TARGET_DETECTOR_HPP
+#define TARGET_DETECTOR_HPP
 
 #include <iostream>
+#include <memory>
 #include <opencv2/opencv.hpp>
 
-using namespace cv;
-
-class targetDetector{
+class TargetDetector{
   public:
-    targetDetector();
-    Target processImage(Mat image);
+     std::unique_ptr<Target> processImage(Mat image);
   };
 
   #endif

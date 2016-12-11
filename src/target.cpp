@@ -7,15 +7,19 @@ Target::Target(std::vector<cv::Point> contour)
 {
 }
 
-Target::Target(){
-  
+Target::Target()
+{
+
 }
 
-Point getTopPoint(){
+cv::Point Target::getTopPoint()
+{
   int max = 0;
   int ref = 0;
-  for(int i = 0; i <contour.size(); i++){
-    if (contour[i].y > max){
+  for(int i = 0; i <contour.size(); i++)
+  {
+    if (contour[i].y > max)
+    {
       ref = i;
       max = contour[i].y;
     }
@@ -23,11 +27,14 @@ Point getTopPoint(){
   return contour[ref];
 }
 
-Point getBottomPoint(){
+cv::Point Target::getBottomPoint()
+{
   int min = 10000;
   int ref = 0;
-  for(int i = 0; i <contour.size(); i++){
-    if (contour[i].y < min){
+  for(int i = 0; i <contour.size(); i++)
+  {
+    if (contour[i].y < min)
+    {
       ref = i;
       min = contour[i].y;
     }
@@ -35,11 +42,13 @@ Point getBottomPoint(){
   return contour[ref];
 }
 
-Point getLeftPoint(){
+cv::Point Target::getLeftPoint(){
   int min = 10000;
   int ref = 0;
-  for(int i = 0; i <contour.size(); i++){
-    if (contour[i].x < min){
+  for(int i = 0; i <contour.size(); i++)
+  {
+    if (contour[i].x < min)
+    {
       ref = i;
       min = contour[i].x;
     }
@@ -47,11 +56,13 @@ Point getLeftPoint(){
   return contour[ref];
 }
 
-Point getRightPoint(){
+cv::Point Target::getRightPoint(){
   int max = 0;
   int ref = 0;
-  for(int i = 0; i <contour.size(); i++){
-    if (contour[i].x > max){
+  for(int i = 0; i <contour.size(); i++)
+  {
+    if (contour[i].x > max)
+    {
       ref = i;
       max = contour[i].x;
     }
@@ -59,15 +70,18 @@ Point getRightPoint(){
   return contour[ref];
 }
 
-double getHeight(){
+double Target::getHeight()
+{
   return abs(getTopPoint().y - getBottomPoint().y):
 }
 
-double getWidth(){
+double Target::getWidth()
+{
   return abs(getRightPoint().x - getLeftPoint().x):
 }
 
-Point getCenter(){
+cv::Point Target::getCenter()
+{
 
     double totalX=0, totalY=0;
 
@@ -76,6 +90,6 @@ Point getCenter(){
         totalX += contour[i].x;
     }
 
-    return Point(totalX /= i, totalY /= i);
+    return cv::Point(totalX /= i, totalY /= i);
 
 }

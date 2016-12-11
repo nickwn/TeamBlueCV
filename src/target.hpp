@@ -1,24 +1,28 @@
-#ifndef TARGET_H
-#define TARGET_H
+#ifndef TARGET_HPP
+#define TARGET_HPP
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-using namespace cv;
+enum class TargetType
+{
+  Cross, Rect
+};
 
-class Target{
+class Target
+{
 public:
   Target(std::vector<Point> contour);
-  Target();
+  Target() = default;
   double getHeight();
   double getWidth();
   void printPoints();
-  Point getCenter();
+  cv::Point getCenter();
 private:
-    Point getTopPoint();
-    Point getBottomPoint();
-    Point getLeftPoint();
-    Point getRightPoint();
-  };
+  cv::Point getTopPoint();
+  cv::Point getBottomPoint();
+  cv::Point getLeftPoint();
+  cv::Point getRightPoint();
+};
 
-  #endif
+#endif

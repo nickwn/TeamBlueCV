@@ -1,10 +1,7 @@
-#include "targetDetector.hpp"
+#include "TargetDetector.hpp"
 
-targetDetector::targetDetector(){
-
-}
-
-Target targetDetector::processImage(Mat image, int num){}
+Target TargetDetector::processImage(Mat image, int num)
+{
 
     TargetProcessing tP;
 
@@ -38,24 +35,29 @@ Target targetDetector::processImage(Mat image, int num){}
     double totalX=0, totalY=0; // total X and Y of all points of output added together
     int i=0, j=0 // iterator variables
 
-     for(i; i<contours.size(); i++){
+     for(i; i<contours.size(); i++)
+     {
         approxPolyDP(contours[i], output, cv::arcLength(cv::Mat(contours.at(i)), true) * 0.02
         , bool closed);
-        if(output.size()== num && num == 4){ // if trying to detect higher 4 sided target
+        if(output.size()== num && num == 4)
+        { // if trying to detect higher 4 sided target
 
-          for(j; j<output.size(); j++){ // iterate through approxPolyDP output
+          for(j; j<output.size(); j++)
+          { // iterate through approxPolyDP output
             totalX += output[j].x; // add all X values of the output to later find average
             totalY += output[j].y; // add all Y values of the output to later find average
           }
           Point point(total X/= output.size(), totalY /= output.size()); // center point of output
 
-        if(point.y>maxY){ // checking for highest output
-            maxY = point.y; // comparing Y value of all output vectors
-            max = output; // set max vector as the highest output thus far
+          if(point.y>maxY)
+          { // checking for highest output
+              maxY = point.y; // comparing Y value of all output vectors
+              max = output; // set max vector as the highest output thus far
           }
-          }
+        }
 
-          else if(output.size()==num && num ==12){ // if trying to detect lower parking zone 12 sided target (plus)
+          else if(output.size()==num && num ==12)
+          { // if trying to detect lower parking zone 12 sided target (plus)
             return output; // return the output to set as the target
           }
 
