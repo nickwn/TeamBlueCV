@@ -1,71 +1,83 @@
+#include <algorithm>
+#include <memory>
 #include "TargetDetector.hpp"
+#include "GUIManager.hpp"
 
-Target TargetDetector::processImage(Mat image, int num)
+std::unique_ptr<Target> TargetDetector::processImage(const Mat& img, int count)
 {
+  int hueMin = 0, hueMax = 102;
+  GUIManager gui;
+  gui.createWindow("sliders");
+  gui.addSlider("sliders", "hueMin", 255, &hueMin);
+  gui.addSlider("sliders", "hueMax", 255, &hueMax);
+  std::std::vector<cv::Mat> hsvSplit;
+  split(img, hsvSplit);
+  cv::Mat hueThreshed;
+  thresh(hsvSplit[0], hueThreshed, hueMin, hueMax);
+  std::vector<std::vector<cv::Point> > contours;
+  findContours(hueThreshed, contours);
+  std::vector<cv::Point> targetContour;
+  filterContours(contours, targetContour);
+  if (targetContour.empty())
+  {
+    return nullptr;
+  }
+  return std::make_unique(new Target(targetContour));
+}
 
-    TargetProcessing tP;
+void TargetDetector::split(const cv::Mat& img, std::vector<cv::Mat>& split)
+{
+  cv::Mat hsv;
+  cv::cvtColor(img, hsv, CV_BGR2HSV);
+  cv::split(hsv, split);
+}
 
-     cvtColor(image, img_hsv, CV_BGR2HSV);
-     std::vector<cv::Mat> channels;
-     split(img_hsv, channels);
+void TargetDetector::thresh(const cv::Mat& in, cv::Mat& out, int low, int high)
+{
+  Mat threshLower, threshUpper;
+  threshold(hueOrig, threshLower, low, 255, CV_THRESH_BINARY);
+  threshold(hueOrig, threshUpper, high, 255, CV_THRESH_BINARY_INV);
+  out = threshLower & threshUpper;
+}
 
-     Mat hueOrig = channels.at(0).clone();
-     Mat threshLower, threshUpper;
-     Mat result;
+void TargetDetector::findContours(const cv::Mat& img, std::vector<std::vector<cv::Point> >& contours)
+{
+  cv::findContours(img, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+}
 
-     threshold(hueOrig, threshLower, 60, 255, CV_THRESH_BINARY);
-     threshold(hueOrig, threshUpper, 180, 255, CV_THRESH_BINARY_INV);
+void TargetDetector::filterContours(const std::vector<std::vector<cv::Point> >& unfiltered, std::vector<cv::Point>& filtered, int cornerCount)
+{
+	std::vector<cv::Point> approx;
+  std::vector<std::vector<cv::Point> > targets;
+	for (int i = 0; i < contours.size(); i++)
+	{
+		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours.at(i)), true) * 0.02, true);
 
-     result = threshLower & threshUpper;
-     //imshow("Flag", result);
+		if(approx.size() == 4)
+		{
+			double maxCosine = 0;
 
-     Mat edges;
-     std::vector<std::vector<Point> > contours;
+			for(int j = 2; j<= 4; j++)
+			{
+				double cosine = fabs(cos(angle(approx[j%4], approx[j-2], approx[j-1])));
+				maxCosine = MAX(maxCosine, cosine);
+			}
 
-     Canny(result, edges, 100, 200, 3, false);
+			if(maxCosine < 0.3)
+				targets.push_back(approx);
+		}
+	}
 
-     //imshow("Cannied", edges);
+  std::sort(targets.begin(), targets.end(), [](auto i, auto j){return i[0].y < j[0].y}); // sort in descending order, highest to lowest
+  filtered = targets[0]; //return the hightest point
+}
 
-     cv::findContours(edges, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-
-     std::vector<Point> output; // the vector of points of the approxPolyDP contour
-     std::vector<Point> max; // the vector of points of the highest approxPolyDP output contour
-
-    double maxY = 0; // highest Y variable checker
-    double totalX=0, totalY=0; // total X and Y of all points of output added together
-    int i=0, j=0 // iterator variables
-
-     for(i; i<contours.size(); i++)
-     {
-        approxPolyDP(contours[i], output, cv::arcLength(cv::Mat(contours.at(i)), true) * 0.02
-        , bool closed);
-        if(output.size()== num && num == 4)
-        { // if trying to detect higher 4 sided target
-
-          for(j; j<output.size(); j++)
-          { // iterate through approxPolyDP output
-            totalX += output[j].x; // add all X values of the output to later find average
-            totalY += output[j].y; // add all Y values of the output to later find average
-          }
-          Point point(total X/= output.size(), totalY /= output.size()); // center point of output
-
-          if(point.y>maxY)
-          { // checking for highest output
-              maxY = point.y; // comparing Y value of all output vectors
-              max = output; // set max vector as the highest output thus far
-          }
-        }
-
-          else if(output.size()==num && num ==12)
-          { // if trying to detect lower parking zone 12 sided target (plus)
-            return output; // return the output to set as the target
-          }
-
-        }
-
-        return max; // if trying to find a 4 sided contour, return the highest one
-
-     waitKey(0);
-
-   }
+double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
+{
+    double dx1 = pt1.x - pt0.x;
+    double dy1 = pt1.y - pt0.y;
+    double dx2 = pt2.x - pt0.x;
+    double dy2 = pt2.y - pt0.y;
+    double bleh = atan(dy1/dx1)-atan(dy2/dx2);
+    return bleh;
 }

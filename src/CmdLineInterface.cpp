@@ -7,7 +7,7 @@ CmdLineInterface::CmdLineInterface(int argc, char* argv[])
 {
   std::string arg(argv[1]);
   isTest = arg.find("-t")!=std::string::npos || arg.find("--test")!=std::string::npos;
-  if (std::find(argv, argv+argc-1, "cross") != argv+argc-1)
+  if (std::find(argv, argv+argc, "cross") != argv+argc-1)
   {
     targetType = TargetType::Cross
   }

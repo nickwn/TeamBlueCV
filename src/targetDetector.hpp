@@ -5,9 +5,16 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-class TargetDetector{
+class TargetDetector
+{
   public:
-     std::unique_ptr<Target> processImage(Mat image);
-  };
+     std::unique_ptr<Target> processImage(const cv::Mat& img, int count);
+  private:
+    void split(const cv::Mat& img, std::vector<cv::Mat>& split);
+    void thresh(const cv::Mat& in, cv::Mat& out, int low, int high);
+    void findContours(const cv::Mat& img, std::vector<std::vector<cv::Point> >& contours);
+    void filterContours(const std::vector<std::vector<cv::Point> >& unfiltered, std::vector<cv::Point>& filtered);
+    double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
+};
 
   #endif
