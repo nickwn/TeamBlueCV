@@ -1,28 +1,31 @@
 #include <algorithm>
 #include <memory>
+#include <opencv2/opencv.hpp>
 #include "TargetDetector.hpp"
+#include "Target.hpp"
 #include "GUIManager.hpp"
 
-std::unique_ptr<Target> TargetDetector::processImage(const Mat& img, int count)
+std::unique_ptr<Target> TargetDetector::processImage(const cv::Mat& img, int count)
 {
   int hueMin = 0, hueMax = 102;
   GUIManager gui;
   gui.createWindow("sliders");
   gui.addSlider("sliders", "hueMin", 255, &hueMin);
   gui.addSlider("sliders", "hueMax", 255, &hueMax);
-  std::std::vector<cv::Mat> hsvSplit;
+  std::vector<cv::Mat> hsvSplit;
   split(img, hsvSplit);
   cv::Mat hueThreshed;
   thresh(hsvSplit[0], hueThreshed, hueMin, hueMax);
   std::vector<std::vector<cv::Point> > contours;
   findContours(hueThreshed, contours);
   std::vector<cv::Point> targetContour;
-  filterContours(contours, targetContour);
+  filterContours(contours, targetContour, count);
   if (targetContour.empty())
   {
     return nullptr;
   }
-  return std::make_unique(new Target(targetContour));
+
+  return std::make_unique<Target>(Target(targetContour));
 }
 
 void TargetDetector::split(const cv::Mat& img, std::vector<cv::Mat>& split)
@@ -34,9 +37,9 @@ void TargetDetector::split(const cv::Mat& img, std::vector<cv::Mat>& split)
 
 void TargetDetector::thresh(const cv::Mat& in, cv::Mat& out, int low, int high)
 {
-  Mat threshLower, threshUpper;
-  threshold(hueOrig, threshLower, low, 255, CV_THRESH_BINARY);
-  threshold(hueOrig, threshUpper, high, 255, CV_THRESH_BINARY_INV);
+  cv::Mat threshLower, threshUpper;
+  cv::threshold(in, threshLower, low, 255, CV_THRESH_BINARY);
+  cv::threshold(in, threshUpper, high, 255, CV_THRESH_BINARY_INV);
   out = threshLower & threshUpper;
 }
 
@@ -47,28 +50,28 @@ void TargetDetector::findContours(const cv::Mat& img, std::vector<std::vector<cv
 
 void TargetDetector::filterContours(const std::vector<std::vector<cv::Point> >& unfiltered, std::vector<cv::Point>& filtered, int cornerCount)
 {
-	std::vector<cv::Point> approx;
+  std::vector<cv::Point> approx;
   std::vector<std::vector<cv::Point> > targets;
-	for (int i = 0; i < contours.size(); i++)
+  for (int i = 0; i < unfiltered.size(); i++)
+  {
+	cv::approxPolyDP(cv::Mat(unfiltered[i]), approx, cv::arcLength(cv::Mat(unfiltered[i]), true) * 0.02, true);
+
+	if(approx.size() == 4)
 	{
-		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours.at(i)), true) * 0.02, true);
+	  double maxCosine = 0;
 
-		if(approx.size() == 4)
-		{
-			double maxCosine = 0;
+	  for(int j = 2; j<= 4; j++)
+	  {
+	    double cosine = fabs(cos(angle(approx[j%4], approx[j-2], approx[j-1])));
+		maxCosine = MAX(maxCosine, cosine);
+	  }
 
-			for(int j = 2; j<= 4; j++)
-			{
-				double cosine = fabs(cos(angle(approx[j%4], approx[j-2], approx[j-1])));
-				maxCosine = MAX(maxCosine, cosine);
-			}
-
-			if(maxCosine < 0.3)
-				targets.push_back(approx);
-		}
+	  if(maxCosine < 0.3)
+		targets.push_back(approx);
 	}
+  }
 
-  std::sort(targets.begin(), targets.end(), [](auto i, auto j){return i[0].y < j[0].y}); // sort in descending order, highest to lowest
+  std::sort(targets.begin(), targets.end(), [](auto i, auto j) {return i[0].y < j[0].y; }); // sort in descending order, highest to lowest
   filtered = targets[0]; //return the hightest point
 }
 

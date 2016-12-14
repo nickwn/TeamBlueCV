@@ -1,13 +1,9 @@
-#include "target.hpp"
+#include "Target.hpp"
 #include <opencv2/opencv.hpp>
 #include <math.h>
 #include <iostream>
 
-Target::Target(std::vector<cv::Point> contour)
-{
-}
-
-Target::Target()
+Target::Target(std::vector<cv::Point> c):contour(c)
 {
 
 }
@@ -42,7 +38,8 @@ cv::Point Target::getBottomPoint()
   return contour[ref];
 }
 
-cv::Point Target::getLeftPoint(){
+cv::Point Target::getLeftPoint()
+{
   int min = 10000;
   int ref = 0;
   for(int i = 0; i <contour.size(); i++)
@@ -56,7 +53,8 @@ cv::Point Target::getLeftPoint(){
   return contour[ref];
 }
 
-cv::Point Target::getRightPoint(){
+cv::Point Target::getRightPoint()
+{
   int max = 0;
   int ref = 0;
   for(int i = 0; i <contour.size(); i++)
@@ -72,24 +70,29 @@ cv::Point Target::getRightPoint(){
 
 double Target::getHeight()
 {
-  return abs(getTopPoint().y - getBottomPoint().y):
+  return abs(getTopPoint().y - getBottomPoint().y);
 }
 
 double Target::getWidth()
 {
-  return abs(getRightPoint().x - getLeftPoint().x):
+  return abs(getRightPoint().x - getLeftPoint().x);
 }
 
 cv::Point Target::getCenter()
 {
 
-    double totalX=0, totalY=0;
+  double totalX=0, totalY=0;
+  int i;
+  for(i = 0; i < contour.size(); i++)
+  {
+      totalX += contour[i].x;
+  }
 
-    for(int i = 0; i < contour.size(); i++)
-    {
-        totalX += contour[i].x;
-    }
+  return cv::Point(totalX /= i, totalY /= i);
 
-    return cv::Point(totalX /= i, totalY /= i);
+}
 
+std::vector<cv::Point> Target::getContour()
+{
+  return contour;
 }

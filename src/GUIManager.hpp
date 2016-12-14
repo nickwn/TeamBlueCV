@@ -10,7 +10,7 @@ class GUIManager
 public:
   void createWindow(const std::string& winName);
   void show(const std::string& winName, const cv::Mat& img);
-  void addSlider(const std::string& winName, const std::string& sliderName);
+  void addSlider(const std::string& winName, const std::string& sliderName, int max = 255, int* val = nullptr);
 private:
   std::vector<std::string> windows;
 };

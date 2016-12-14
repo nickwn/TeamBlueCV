@@ -9,7 +9,7 @@ void GUIManager::createWindow(const std::string& winName)
 
 void GUIManager::show(const std::string& winName, const cv::Mat& img)
 {
-  if(std::find(windows.start(), windows.end(), winName) == windows.end())
+  if(std::find(windows.begin(), windows.end(), winName) == windows.end())
   {
     windows.push_back(winName);
     cv::namedWindow(winName);
@@ -18,7 +18,7 @@ void GUIManager::show(const std::string& winName, const cv::Mat& img)
   cv::imshow(winName, img);
 }
 
-void GUIManager::addSlider(const std::string& winName, const std::string& sliderName, int max = 255, int* val = nullptr)
+void GUIManager::addSlider(const std::string& winName, const std::string& sliderName, int max, int* val)
 {
   cv::createTrackbar(sliderName, winName, val, max);
 }

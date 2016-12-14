@@ -9,13 +9,13 @@ class TargetProcessor
 {
 public:
   TargetProcessor(double focalLength, int imgWidth, int imgHeight);
-  void loadTarget(const Target& target, double tgtWidth);
+  void loadTarget(Target& target, double tgtWidth);
   double calcDistance();
   double calcAzimuth();
   double calcAltitude();
 
 private:
-  double targetWith;
+  double targetWidth;
   double objectWidth;
   Point targetCenter;
   double focalLength;

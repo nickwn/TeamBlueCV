@@ -31,8 +31,6 @@ double parkCrossAz; // azimuth towards parking cross in degrees
 
 // Cameras and stuff
 TargetDetector targetDetector; // general-purpose TargetDetector
-//TargetProcessor crossProcessor(20.32, 480, 320, 240);
-//TargetProcessor goalProcessor(50, 480, 320, 240);
 TargetProcessor targetProcessor(480, 320, 240);
 VideoCapture backCam; // The back cam. It's main purpose is to find the distance and azimuth for the alignment cross and parking cross. Angled straight ahead
 VideoCapture sideCam; // The side cam. It's main purpose is to find the distance and azimuth of the high goal and parking cross.
@@ -84,12 +82,12 @@ void test(TargetType targetType)
     target = targetDetector.processImage(backImg, points);
     if(target != nullptr)
     {
-      targetProcessor.loadTarget(target, tgtWidth);
+      targetProcessor.loadTarget(*target, tgtWidth);
       distance = targetProcessor.calcDistance();
       azimuth = targetProcessor.calcAzimuth();
       altitude = targetProcessor.calcAltitude();
 
-      drawContours(backImg, &contour, 0, Scalar(255, 0, 0), 4);
+      //drawContours(backImg, &contour, 0, Scalar(255, 0, 0), 4);
       gui.show("img", backImg);
       std::cout << "Target found!" << std::endl
                 << "\tDistance: " << distance << std::endl
@@ -117,7 +115,7 @@ void run()
     alignCross = targetDetector.processImage(sideImg, 12); // make the image of horizontal detection a target
     if(alignCross != nullptr)
     {
-      targetProcessor.loadTarget(alignCross, 20.32);
+      targetProcessor.loadTarget(*alignCross, 20.32);
       alignCrossAz = targetProcessor.calcAzimuth(); //TODO send to sc
     }
   }
@@ -131,7 +129,7 @@ void run()
     alignCross = targetDetector.processImage(backImg, 12);
     if(alignCross != nullptr)
     {
-      targetProcessor.loadTarget(alignCross. 20.32);
+      targetProcessor.loadTarget(*alignCross, 20.32);
       alignCrossDist = targetProcessor.calcDistance();
       alignCrossAz = targetProcessor.calcAzimuth();
     }
@@ -141,7 +139,7 @@ void run()
     highGoal = targetDetector.processImage(sideImg, 8);
     if(highGoal != nullptr)
     {
-      targetProcessor.loadTarget(highGoal, 50);
+      targetProcessor.loadTarget(*highGoal, 50);
       highGoalDist = targetProcessor.calcDistance();
       highGoalAz = targetProcessor.calcAzimuth();
       highGoalAlt = targetProcessor.calcAltitude();
@@ -154,7 +152,7 @@ void run()
       parkCross = targetDetector.processImage(sideImg, 8);
       if(parkCross != nullptr)
       {
-        targetProcessor.loadTarget(parkCross, 20.32);
+        targetProcessor.loadTarget(*parkCross, 20.32);
         parkCrossDist = targetProcessor.calcDistance();
         parkCrossAz = targetProcessor.calcAzimuth();
       }
@@ -171,7 +169,7 @@ void run()
     parkCross = targetDetector.processImage(backImg, 12);
     if(parkCross != nullptr)
     {
-      targetProcessor.loadTarget(parkCross, 50);
+      targetProcessor.loadTarget(*parkCross, 50);
       parkCrossDist = targetProcessor.calcDistance();
       parkCrossAz = targetProcessor.calcAzimuth();
     }

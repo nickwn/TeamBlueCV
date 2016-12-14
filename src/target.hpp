@@ -12,13 +12,16 @@ enum class TargetType
 class Target
 {
 public:
-  Target(std::vector<Point> contour);
+  Target(std::vector<cv::Point> c);
   Target() = default;
   double getHeight();
   double getWidth();
   void printPoints();
   cv::Point getCenter();
+  std::vector<cv::Point> getContour();
+
 private:
+  std::vector<cv::Point> contour;
   cv::Point getTopPoint();
   cv::Point getBottomPoint();
   cv::Point getLeftPoint();
