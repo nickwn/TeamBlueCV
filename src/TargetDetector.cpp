@@ -75,7 +75,7 @@ void TargetDetector::filterContours(const std::vector<std::vector<cv::Point> >& 
   filtered = targets[0]; //return the hightest point
 }
 
-double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
+double TargetDetector::angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
 {
     double dx1 = pt1.x - pt0.x;
     double dy1 = pt1.y - pt0.y;
