@@ -9,7 +9,7 @@
 class TargetDetector
 {
   public:
-     std::unique_ptr<Target> processImage(const cv::Mat& img, int count);
+     std::unique_ptr<Target> processImage(const cv::Mat& img, int count, int hueMin = 0, int hueMax = 102, int valMin = 227, int valMax = 225);
   private:
     void split(const cv::Mat& img, std::vector<cv::Mat>& split);
     void thresh(const cv::Mat& in, cv::Mat& out, int low, int high);

@@ -78,10 +78,17 @@ void test(TargetType targetType)
   int tgtWidth = (targetType==TargetType::Cross) ? 20.32 : 50;
   double distance = 0, azimuth = 0, altitude = 0;
 
+  int hueMin = 0, hueMax = 102, valMin = 227, valMax = 255;
+  gui.createWindow("img");
+  gui.addSlider("img", "hueMin", 255, &hueMin);
+  gui.addSlider("img", "hueMax", 255, &hueMax);
+  gui.addSlider("img", "valMin", 255, &valMin);
+  gui.addSlider("img", "valMax", 255, &valMax);
+
   while(waitKey(10) < 0)
   {
     backCam >> backImg;
-    target = targetDetector.processImage(backImg, points);
+    target = targetDetector.processImage(backImg, points, hueMin, hueMax, valMin, valMax);
     if(target != nullptr)
     {
       targetProcessor.loadTarget(*target, tgtWidth);

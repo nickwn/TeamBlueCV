@@ -5,19 +5,18 @@
 #include "Target.hpp"
 #include "GUIManager.hpp"
 
-std::unique_ptr<Target> TargetDetector::processImage(const cv::Mat& img, int count)
+std::unique_ptr<Target> TargetDetector::processImage(const cv::Mat& img, int count, int hueMin, int hueMax, int valMin, int valMax)
 {
-  int hueMin = 0, hueMax = 102;
-  GUIManager gui;
-  gui.createWindow("sliders");
-  gui.addSlider("sliders", "hueMin", 255, &hueMin);
-  gui.addSlider("sliders", "hueMax", 255, &hueMax);
   std::vector<cv::Mat> hsvSplit;
   split(img, hsvSplit);
   cv::Mat hueThreshed;
+  cv::Mat valThreshed;
+  cv::Mat threshed;
   thresh(hsvSplit[0], hueThreshed, hueMin, hueMax);
+  thresh(hsvSplit[1], valThreshed, valMin, valMax);
+  threshed = hueThreshed & valThreshed;
   std::vector<std::vector<cv::Point> > contours;
-  findContours(hueThreshed, contours);
+  findContours(threshed, contours);
   std::vector<cv::Point> targetContour;
   filterContours(contours, targetContour, count);
   if (targetContour.empty())
