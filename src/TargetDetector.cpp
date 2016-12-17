@@ -5,6 +5,12 @@
 #include "Target.hpp"
 #include "GUIManager.hpp"
 
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 std::unique_ptr<Target> TargetDetector::processImage(const cv::Mat& img, int count, int hueMin, int hueMax, int valMin, int valMax)
 {
   std::vector<cv::Mat> hsvSplit;
@@ -24,7 +30,7 @@ std::unique_ptr<Target> TargetDetector::processImage(const cv::Mat& img, int cou
     return nullptr;
   }
 
-  return std::make_unique<Target>(Target(targetContour));
+  return make_unique<Target>(Target(targetContour));
 }
 
 void TargetDetector::split(const cv::Mat& img, std::vector<cv::Mat>& split)
@@ -70,7 +76,7 @@ void TargetDetector::filterContours(const std::vector<std::vector<cv::Point> >& 
 	}
   }
 
-  std::sort(targets.begin(), targets.end(), [](auto i, auto j) {return i[0].y < j[0].y; }); // sort in descending order, highest to lowest
+  std::sort(targets.begin(), targets.end(), [](std::vector<cv::Point> i, std::vector<cv::Point> j) {return i[0].y < j[0].y; }); // sort in descending order, highest to lowest
   filtered = targets[0]; //return the hightest point
 }
 
