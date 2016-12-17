@@ -153,13 +153,13 @@ void run()
       targetProcessor.loadTarget(*alignCross, 20.32);
       alignCrossDist = targetProcessor.calcDistance();
       alignCrossAz = targetProcessor.calcAzimuth();
-      msg << "foundAlignCross:true;" << "alignCrossDist:" << alignCrossDist << ";alignCrossAz:" << alignCrossAz;
+      msg << "foundAlignCross:1;" << "alignCrossDist:" << alignCrossDist << ";alignCrossAz:" << alignCrossAz;
       networkController.sendMessage(msg.str());
       msg.str("");
     }
     else
     {
-      msg << "foundAlignCross:false";
+      msg << "foundAlignCross:0";
       networkController.sendMessage(msg.str());
       msg.str("");
     }
@@ -173,13 +173,13 @@ void run()
       highGoalDist = targetProcessor.calcDistance();
       highGoalAz = targetProcessor.calcAzimuth();
       highGoalAlt = targetProcessor.calcAltitude();
-      msg << "foundHighGoal:true;" << "highGoalDist:" << highGoalDist << ";highGoalAz:" << highGoalAz << ";highGoalAlt:" << highGoalAlt;
+      msg << "foundHighGoal:1;" << "highGoalDist:" << highGoalDist << ";highGoalAz:" << highGoalAz << ";highGoalAlt:" << highGoalAlt;
       networkController.sendMessage(msg.str());
       msg.str("");
     }
     else
     {
-      msg << "foundHighGoal:false";
+      msg << "foundHighGoal:0";
       networkController.sendMessage(msg.str());
       msg.str("");
     }
@@ -194,13 +194,13 @@ void run()
         targetProcessor.loadTarget(*parkCross, 20.32);
         parkCrossDist = targetProcessor.calcDistance();
         parkCrossAz = targetProcessor.calcAzimuth();
-        msg << "foundParkCross:true;" << "parkCrossDist:" << parkCrossDist << ";parkCrossAz:" << parkCrossAz;
+        msg << "foundParkCross:1;" << "parkCrossDist:" << parkCrossDist << ";parkCrossAz:" << parkCrossAz;
         networkController.sendMessage(msg.str());
         msg.str("");
       }
       else
       {
-        msg << "foundParkCross:false";
+        msg << "foundParkCross:0";
         networkController.sendMessage(msg.str());
         msg.str("");
       }
@@ -221,13 +221,13 @@ void run()
       targetProcessor.loadTarget(*parkCross, 50);
       parkCrossDist = targetProcessor.calcDistance();
       parkCrossAz = targetProcessor.calcAzimuth();
-      msg << "foundParkCross:true;" << "parkCrossDist:" << parkCrossDist << ";parkCrossAz:" << parkCrossAz;
+      msg << "foundParkCross:1;" << "parkCrossDist:" << parkCrossDist << ";parkCrossAz:" << parkCrossAz;
       networkController.sendMessage(msg.str());
       msg.str("");
     }
     else
     {
-      msg << "foundParkCross:false";
+      msg << "foundParkCross:0";
       networkController.sendMessage(msg.str());
       msg.str("");
     }
